@@ -219,8 +219,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcee59b734f456548a753b44762938fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 10
-  numWallOfPlayer: 3
+  size: 8
+  numWallOfPlayer: 5
   cellPrefab: {fileID: 4104504367832471711, guid: f673eaaf53e182749a68272832286462,
     type: 3}
   Player1: {fileID: 1478763866264323681, guid: f2c649087a13b7d4fb366b1759001dab, type: 3}

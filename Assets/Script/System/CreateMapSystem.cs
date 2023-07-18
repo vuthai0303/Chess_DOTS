@@ -73,10 +73,10 @@ public partial struct CreateMapSystem : ISystem
 
             ecb.AddComponent(e, new ScoreComponent { score_player1 = 1, score_player2 = 1 });
             //random player is first
-            Random rand = new Random(10);
+            Random rand = Random.CreateFromIndex((uint)System.DateTime.Now.TimeOfDay.TotalSeconds);
             ecb.AddComponent(e, new TurnPlayComponent
             {
-                value = rand.NextInt(1, 3) == 1 ? (int)Player.Player1 : (int)Player.Player2
+                value = rand.NextInt(0, 10) >= 5 ? (int)Player.Player1 : (int)Player.Player2
             });
             mapComponent.ValueRW.isCreateMap = true;
         }
@@ -91,7 +91,7 @@ public partial struct CreateMapSystem : ISystem
         int size = mapComponent.ValueRO.size;
         int numWallOfPlayer = mapComponent.ValueRO.numWallOfPlayer;
         NativeHashMap<int, int> targetSpawn = new NativeHashMap<int, int>(numWallOfPlayer * 2 + 2, Allocator.Temp);
-        Random rand = new Random(10);
+        Random rand = Random.CreateFromIndex((uint)System.DateTime.Now.TimeOfDay.TotalSeconds);
 
         ////add spawn player
         targetSpawn.Add(0, (int)TargetSpawn.Player2);

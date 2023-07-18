@@ -59,8 +59,10 @@ public partial struct SpawnJob : IJobEntity
 
             //set type moving
             ECB.AddComponent<ControlMoveTag>(newEntity);
+            //ECB.AddComponent<AIMoveTag>(newEntity);
 
-        }else if(spawner.ValueRO.targetID == (int)TargetSpawn.Player2)
+        }
+        else if(spawner.ValueRO.targetID == (int)TargetSpawn.Player2)
         {
             position.y = 1f;
             rotation = quaternion.LookRotation(new float3(0f, 0f, 1f), new float3(0f, -1f, 0f));
@@ -75,6 +77,10 @@ public partial struct SpawnJob : IJobEntity
             //set type moving
             ECB.AddComponent<AIMoveTag>(newEntity);
 
+        }
+        else
+        {
+            ECB.AddComponent<WallComponent>(newEntity);
         }
         ECB.SetComponent(newEntity, new LocalTransform
         {

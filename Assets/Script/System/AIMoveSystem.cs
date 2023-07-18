@@ -1,8 +1,8 @@
+using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 [BurstCompile]
 [UpdateBefore(typeof(MovingSystem))]
@@ -29,13 +29,6 @@ public partial struct ALMoveSystem : ISystem
             return;
         }
 
-        RandomComponent randomComponent;
-        var isRandomComponent = SystemAPI.TryGetSingleton<RandomComponent>(out randomComponent);
-        if (!isRandomComponent)
-        {
-            return;
-        }
-
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
 
         int player1_cellId = 99;
@@ -58,7 +51,7 @@ public partial struct ALMoveSystem : ISystem
             ECB = ecb, 
             mapComponent = map,
             turnPlaycomponent = turnPlayComponent,
-            randomComponent = randomComponent,
+            mRandom = Unity.Mathematics.Random.CreateFromIndex((uint)System.DateTime.Now.TimeOfDay.TotalSeconds),
             player1_cellId = player1_cellId,
             player2_cellId = player2_cellId,
         }.Schedule();
@@ -75,7 +68,7 @@ public partial struct AlMoveJob : IJobEntity
     public EntityCommandBuffer ECB;
     public MapComponent mapComponent;
     public TurnPlayComponent turnPlaycomponent;
-    public RandomComponent randomComponent;
+    public Unity.Mathematics.Random mRandom;
     public int player1_cellId;
     public int player2_cellId;
 
@@ -120,7 +113,7 @@ public partial struct AlMoveJob : IJobEntity
             return -1;
         }
         int cellID = convertVectorToInt(position);
-        int random = randomComponent.mRandom.NextInt(0, arrNextMove.Length * 10);
+        int random = mRandom.NextInt(0, arrNextMove.Length * 10);
         return arrNextMove[ (int)math.floor(random / 10)];
     }
 
@@ -141,6 +134,8 @@ public partial struct AlMoveJob : IJobEntity
             var nextMove = moveTemp(myPosition, direction);
             cloneMap[convertVectorToInt(nextMove)] = cloneMap[convertVectorToInt(myPosition)];
             int score = CalculatorMiniMaxMove(yourPosition, nextMove, cloneMap, false, 12);
+            UnityEngine.Debug.Log(nextMove);
+            UnityEngine.Debug.Log(score);
             cloneMap.Dispose();
             if (score > max)
             {
@@ -160,11 +155,11 @@ public partial struct AlMoveJob : IJobEntity
             int score = 0;
             if(depth <= 0)
             {
-                score = getScoreInMap(yourPosition, map, isMaxPlayer, true ) + randomComponent.mRandom.NextInt(0, 10);
+                score = getScoreInMap(yourPosition, map, isMaxPlayer, true) + arrNextMove.Length + mRandom.NextInt(0, 2);
             }
             else
             {
-                score = getScoreInMap(yourPosition, map, isMaxPlayer, false);
+                score = getScoreInMap(yourPosition, map, isMaxPlayer, false) + depth;
             }
             return score;
         }
@@ -272,7 +267,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player1 == score_player2)
                 {
-                    return score_player1 + 5;
+                    return score_player1;
                 }
                 else
                 {
@@ -287,7 +282,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player2 == score_player1)
                 {
-                    return score_player2 + 5;
+                    return score_player2;
                 }
                 else
                 {
@@ -306,7 +301,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player1 == score_player2 + 1)
                 {
-                    return score_player1 + 5;
+                    return score_player1;
                 }
                 else
                 {
@@ -321,7 +316,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player2 == score_player1 + 1)
                 {
-                    return score_player2 + 5;
+                    return score_player2;
                 }
                 else
                 {
@@ -339,7 +334,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player1 + 1 == score_player2)
                 {
-                    return score_player1 + 5;
+                    return score_player1;
                 }
                 else
                 {
@@ -354,7 +349,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else if (score_player2 + 1 == score_player1)
                 {
-                    return score_player2 + 5;
+                    return score_player2;
                 }
                 else
                 {
