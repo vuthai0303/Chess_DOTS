@@ -14,3 +14,8 @@ public partial struct ControlMoveTag : IComponentData
 public partial struct AIMoveTag : IComponentData
 {
 }
+
+public partial struct RandomMoveTag : IComponentData
+{
+
+}

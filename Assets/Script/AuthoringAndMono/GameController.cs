@@ -5,6 +5,8 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     public GameObject m_button_start;
+    public GameObject m_input_size;
+    public GameObject m_input_numOfWall;
     public GameObject m_text_endGame;
     public GameObject m_text_turnGame;
     public GameObject m_text_ScorePlayer1;
@@ -27,6 +29,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         stateGameManager.addState((int)GameState.Menu, new MenuState(stateGameManager, (int)GameState.Menu, _world
+                                                                        , m_input_size, m_input_numOfWall
                                                                         , m_button_start, m_canvas_menu, m_canvas_gameUI));
 
         stateGameManager.addState((int)GameState.GameLoop, new GameLoop(stateGameManager, (int)GameState.GameLoop, _world

@@ -72,6 +72,7 @@ public partial struct SpawnJob : IJobEntity
 
             //set type moving
             ECB.AddComponent<ControlMoveTag>(newEntity);
+            //ECB.AddComponent<RandomMoveTag>(newEntity);
             //ECB.AddComponent<AIMoveTag>(newEntity);
 
         }
@@ -89,6 +90,7 @@ public partial struct SpawnJob : IJobEntity
 
             //set type moving
             ECB.AddComponent<AIMoveTag>(newEntity);
+            //ECB.AddComponent<RandomMoveTag>(newEntity);
 
         }
         else
@@ -102,12 +104,11 @@ public partial struct SpawnJob : IJobEntity
             Scale = scale,
         });
 
-        //ECB.RemoveComponent<SpawnerComponent>(entity);
         ECB.DestroyEntity(entity);
     }
 }
 
-//[BurstCompile]
+[BurstCompile]
 public partial struct SpawnCellJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
@@ -125,7 +126,6 @@ public partial struct SpawnCellJob : IJobEntity
             Rotation = quaternion.identity,
             Scale = 1f,
         });
-        //UnityEngine.Debug.Log(spawner.ValueRO.cellID);
         ECB.AddComponent(newEntity, new CellComponent { cellID = cellID, value = (int)ColorCell.Empty });
 
         ECB.DestroyEntity(entity);

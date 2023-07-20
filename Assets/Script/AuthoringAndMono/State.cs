@@ -29,13 +29,18 @@ namespace Assets.script.AuthoringAndMono
     public class MenuState : State
     {
         protected GameObject m_Button_start;
+        protected GameObject m_input_size;
+        protected GameObject m_input_numOfWall;
         protected Canvas m_canvas_menu;
         protected Canvas m_canvas_GameUI;
 
         public MenuState(StateGameManager manager, int id, World world
+                        , GameObject input_size, GameObject input_numOfWall
                         , GameObject buttonStart,Canvas canvas_menu
                         , Canvas canvas_GameUI) : base(manager, id, world)
         {
+            m_input_size = input_size;
+            m_input_numOfWall = input_numOfWall;
             m_Button_start = buttonStart;
             m_canvas_menu = canvas_menu;
             m_canvas_GameUI = canvas_GameUI;
@@ -47,6 +52,10 @@ namespace Assets.script.AuthoringAndMono
             m_canvas_menu.enabled = true;
             m_canvas_GameUI.enabled = false;
             m_Button_start.SetActive(true);
+            //m_input_size.SetActive(true);
+            //m_input_size.GetComponent<Text>().text = "";
+            //m_input_numOfWall.SetActive(true);
+            //m_input_numOfWall.GetComponent<Text>().text = "";
 
         }
 
@@ -60,6 +69,7 @@ namespace Assets.script.AuthoringAndMono
         public override void Update()
         {
             base.Update();
+
         }
 
         public override void FixedUpdate()

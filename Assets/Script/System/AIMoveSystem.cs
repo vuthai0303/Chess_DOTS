@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -96,8 +94,7 @@ public partial struct AlMoveJob : IJobEntity
         var map = new NativeArray<int>(mapComponent.maps.Length, Allocator.Temp);
         mapComponent.maps.CopyTo(map);
 
-        //int nextMove = getRandomNextMove(myPosition, map);
-        int nextMove = getMiniMaxMove(myPosition, yourPosition, map);
+        int nextMove = getMiniMaxMove(playerComponent.ValueRO.playerID, myPosition, yourPosition, map);
         if(nextMove == -1){
             return;
         }
@@ -107,19 +104,7 @@ public partial struct AlMoveJob : IJobEntity
 
     }
 
-    int getRandomNextMove(int2 position, NativeArray<int> map)
-    {
-        FixedList32Bytes<int> arrNextMove = checkNextMove(position, map, mapComponent.size);
-        if(arrNextMove.Length == 0)
-        {
-            return -1;
-        }
-        int cellID = convertVectorToInt(position);
-        int random = mRandom.NextInt(0, arrNextMove.Length * 10);
-        return arrNextMove[ (int)math.floor(random / 10)];
-    }
-
-    int getMiniMaxMove(int2 myPosition, int2 yourPosition, NativeArray<int> map)
+    int getMiniMaxMove(int AIplayerID, int2 myPosition, int2 yourPosition, NativeArray<int> map)
     {
         FixedList32Bytes<int> arrNextMove = checkNextMove(myPosition, map, mapComponent.size);
         if (arrNextMove.Length == 0)
@@ -127,29 +112,36 @@ public partial struct AlMoveJob : IJobEntity
             return -1;
         }
 
-        int max = -map.Length * map.Length; ;
+        int max = -map.Length * map.Length;
         int dir_move = -1;
-        foreach(int direction in arrNextMove)
+        bool isEqual = true;
+        for(int i = 0; i < arrNextMove.Length; i++)
         {
+            int direction = arrNextMove[i];
             var cloneMap = new NativeArray<int>(map.Length, Allocator.Temp);
             map.CopyTo(cloneMap);
             var nextMove = moveTemp(myPosition, direction);
             cloneMap[convertVectorToInt(nextMove)] = cloneMap[convertVectorToInt(myPosition)];
-            int score = CalculatorMiniMaxMove(yourPosition, nextMove, cloneMap, false, 12);
+            int score = CalculatorMiniMaxMove(AIplayerID, yourPosition, nextMove, cloneMap, false, 12);
             //UnityEngine.Debug.Log(nextMove);
             //UnityEngine.Debug.Log(score);
             cloneMap.Dispose();
+            if(i != 0)
+            {
+                isEqual = max == score && isEqual;
+            }
             if (score > max)
             {
                 max = score;
                 dir_move = direction;
             }
         }
-
-        return dir_move;
+        int result = !isEqual ? dir_move : arrNextMove[mRandom.NextInt(0, arrNextMove.Length)];
+        //UnityEngine.Debug.Log("Choose: " + result);
+        return result;
     }
 
-    int CalculatorMiniMaxMove(int2 myPosition, int2 yourPosition, NativeArray<int> map, bool isMaxPlayer, int depth)
+    int CalculatorMiniMaxMove(int AIplayerID, int2 myPosition, int2 yourPosition, NativeArray<int> map, bool isMaxPlayer, int depth)
     {
         FixedList32Bytes<int> arrNextMove = checkNextMove(myPosition, map, mapComponent.size);
         if (arrNextMove.Length == 0 || depth <= 0)
@@ -157,11 +149,12 @@ public partial struct AlMoveJob : IJobEntity
             int score = 0;
             if(depth <= 0)
             {
-                score = getScoreInMap(yourPosition, map, isMaxPlayer, true) + arrNextMove.Length + mRandom.NextInt(0, 2);
+                //score = getScoreInMap(yourPosition, map, isMaxPlayer, true) + arrNextMove.Length + mRandom.NextInt(0, 2);
+                score = getScoreInMap(AIplayerID, yourPosition, map, isMaxPlayer, true);
             }
             else
             {
-                score = getScoreInMap(yourPosition, map, isMaxPlayer, false);
+                score = getScoreInMap(AIplayerID, yourPosition, map, isMaxPlayer, false);
             }
             return score;
         }
@@ -169,13 +162,14 @@ public partial struct AlMoveJob : IJobEntity
         if (isMaxPlayer)
         {
             int max = -map.Length * map.Length;
+            
             for (int i = 0; i < arrNextMove.Length; i++)
             {
                 var cloneMap = new NativeArray<int>(map.Length, Allocator.Temp);
                 map.CopyTo(cloneMap);
                 var nextMove = moveTemp(myPosition, arrNextMove[i]);
                 cloneMap[convertVectorToInt(nextMove)] = cloneMap[convertVectorToInt(myPosition)];
-                int score = CalculatorMiniMaxMove(yourPosition ,nextMove, cloneMap, false, depth - 1);
+                int score = CalculatorMiniMaxMove(AIplayerID, yourPosition ,nextMove, cloneMap, false, depth - 1);
                 cloneMap.Dispose();
                 if (score > max) { 
                     max = score;
@@ -194,8 +188,7 @@ public partial struct AlMoveJob : IJobEntity
 
                 var nextMove = moveTemp(myPosition, arrNextMove[i]);
                 cloneMap[convertVectorToInt(nextMove)] = cloneMap[convertVectorToInt(myPosition)];
-
-                int score = CalculatorMiniMaxMove(yourPosition, nextMove, cloneMap, true, depth - 1);
+                int score = CalculatorMiniMaxMove(AIplayerID, yourPosition, nextMove, cloneMap, true, depth - 1);
                 cloneMap.Dispose();
                 if (score < min)
                 {
@@ -225,14 +218,14 @@ public partial struct AlMoveJob : IJobEntity
         }
     }
 
-    int getScoreInMap(int2 yourPosition, NativeArray<int> map, bool isMaxPlayer, bool isDepth)
+    int getScoreInMap(int AIplayerID,int2 yourPosition, NativeArray<int> map, bool isMaxPlayer, bool isDepth)
     {
         int size = mapComponent.size;
         int score_player1 = 0;
         int score_player2 = 0;
 
         bool isPlayer1 = true;
-        if (map[convertVectorToInt(yourPosition)] == (int)ColorCell.Player1)
+        if (AIplayerID == (int)Player.Player2)
         {
             isPlayer1 = false;
         }
@@ -273,7 +266,7 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else
                 {
-                    return 0;
+                    return -size * size + score_player1;
                 }
             }
             else
@@ -288,75 +281,86 @@ public partial struct AlMoveJob : IJobEntity
                 }
                 else
                 {
-                    return 0;
+                    return -size * size + score_player2;
                 }
             }
         }
 
         if (isMaxPlayer)
         {
+            //if (isPlayer1)
+            //{
+            //    if (score_player1 > score_player2 + 1)
+            //    {
+            //        return size * size * 10 - score_player1;
+            //    }
+            //    else if (score_player1 == score_player2 + 1)
+            //    {
+            //        return score_player1;
+            //    }
+            //    else
+            //    {
+            //        return 0;
+            //    }
+            //}
+            //else
+            //{
+            //    if (score_player2 > score_player1 + 1)
+            //    {
+            //        return size * size * 10 - score_player2;
+            //    }
+            //    else if (score_player2 == score_player1 + 1)
+            //    {
+            //        return score_player2;
+            //    }
+            //    else
+            //    {
+            //        return 0;
+            //    }
+            //}
             if (isPlayer1)
             {
-                if (score_player1 > score_player2 + 1)
-                {
-                    return size * size * 10 - score_player1;
-                }
-                else if (score_player1 == score_player2 + 1)
-                {
-                    return score_player1;
-                }
-                else
-                {
-                    return 0;
-                }
+                return -size * size + score_player1;
             }
             else
             {
-                if (score_player2 > score_player1 + 1)
-                {
-                    return size * size * 10 - score_player2;
-                }
-                else if (score_player2 == score_player1 + 1)
-                {
-                    return score_player2;
-                }
-                else
-                {
-                    return 0;
-                }
+                return -size * size + score_player2;
             }
+            
         }
         else
         {
             if (isPlayer1)
             {
-                if (score_player1 + 1 > score_player2)
-                {
-                    return size * size * 10 - score_player1;
-                }
-                else if (score_player1 + 1 == score_player2)
-                {
-                    return score_player1;
-                }
-                else
-                {
-                    return 0;
-                }
+                //if (score_player1 + 1 > score_player2)
+                //{
+                //    return size * size * 10 - score_player1;
+                //}
+                //else if (score_player1 + 1 == score_player2)
+                //{
+                //    return score_player1;
+                //}
+                //else
+                //{
+                //    return 0;
+                //}
+                return size * size * 10 - score_player1;
             }
             else
             {
-                if (score_player2 + 1 > score_player1)
-                {
-                    return size * size * 10 - score_player2;
-                }
-                else if (score_player2 + 1 == score_player1)
-                {
-                    return score_player2;
-                }
-                else
-                {
-                    return 0;
-                }
+                //if (score_player2 + 1 > score_player1)
+                //{
+                //    return size * size * 10 - score_player2;
+                //}
+                //else if (score_player2 + 1 == score_player1)
+                //{
+                //    return score_player2;
+                //}
+                //else
+                //{
+                //    return 0;
+                //}
+                return size * size * 10 - score_player2;
             }
         }
     }
