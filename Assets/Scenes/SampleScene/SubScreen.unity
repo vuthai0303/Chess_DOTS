@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcee59b734f456548a753b44762938fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 8
+  size: 10
   numWallOfPlayer: 5
   cellPrefab: {fileID: 4104504367832471711, guid: f673eaaf53e182749a68272832286462,
     type: 3}

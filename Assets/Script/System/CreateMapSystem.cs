@@ -2,23 +2,30 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Transforms;
 
 [BurstCompile]
+[UpdateAfter(typeof(ConfigMapSystem))]
 public partial struct CreateMapSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)
     {
         state.Enabled = false;
-
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
+
+        MapConfig mapConfig;
+        var isMapConfig = SystemAPI.TryGetSingleton<MapConfig>(out mapConfig);
+        if (!isMapConfig)
+        {
+            return;
+        }
 
         foreach (var (mapComponent, e) in SystemAPI.Query<RefRW<MapComponent>>().WithEntityAccess())
         {
-            if(mapComponent.ValueRO.isCreateMap)
+            if (mapComponent.ValueRO.isCreateMap)
             {
                 return;
             }
+
             NativeHashMap<int, int> targetSpawn = createSpawn(mapComponent);
             float step = 1.5f;
             int size = mapComponent.ValueRO.size;
@@ -28,42 +35,49 @@ public partial struct CreateMapSystem : ISystem
             {
                 for (int c = 0; c < size; c++)
                 {
-                    var entity = ecb.Instantiate(mapComponent.ValueRO.cell);
+                    var entity = ecb.CreateEntity();
                     float3 position = new float3((float)(-minH + (r * step)), 0.5f, (float)(minV - (step * c)));
                     int cellID = r * size + c;
-                    ecb.SetComponent(entity, new LocalTransform
+                    ecb.AddComponent(entity, new SpawnerCellComponent
                     {
-                        Position = position,
-                        Rotation = quaternion.identity,
-                        Scale = 1f,
+                        cellID = cellID,
+                        position = position,
+                        cellPrefab = mapConfig.cell
                     });
-                    ecb.AddComponent(entity, new CellComponent { cellID =cellID, value = (int)ColorCell.Empty });
+
                     if (targetSpawn.ContainsKey(cellID))
                     {
+                        var newEntity = ecb.CreateEntity();
                         switch (targetSpawn[cellID])
                         {
                             case (int)TargetSpawn.Player1:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Player1;
-                                ecb.AddComponent(entity, new SpawnerComponent
+                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
                                 {
-                                    targetSpawn = mapComponent.ValueRO.Player1,
-                                    targetID = (int)TargetSpawn.Player1
+                                    targetSpawn = mapConfig.Player1,
+                                    targetID = (int)TargetSpawn.Player1,
+                                    cellID = cellID,
+                                    position = position,
                                 });
                                 break;
                             case (int)TargetSpawn.Player2:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Player2;
-                                ecb.AddComponent(entity, new SpawnerComponent
+                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
                                 {
-                                    targetSpawn = mapComponent.ValueRO.Player2,
-                                    targetID = (int)TargetSpawn.Player2
+                                    targetSpawn = mapConfig.Player2,
+                                    targetID = (int)TargetSpawn.Player2,
+                                    cellID = cellID,
+                                    position = position,
                                 });
                                 break;
                             case (int)TargetSpawn.Wall:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Wall;
-                                ecb.AddComponent(entity, new SpawnerComponent
+                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
                                 {
-                                    targetSpawn = mapComponent.ValueRO.Wall,
-                                    targetID = (int)TargetSpawn.Wall
+                                    targetSpawn = mapConfig.Wall,
+                                    targetID = (int)TargetSpawn.Wall,
+                                    cellID = cellID,
+                                    position = position,
                                 });
                                 break;
                         }
@@ -81,16 +95,16 @@ public partial struct CreateMapSystem : ISystem
             mapComponent.ValueRW.isCreateMap = true;
         }
 
+        state.Dependency.Complete();
         ecb.Playback(state.EntityManager);
         ecb.Dispose();
     }
-    
 
     NativeHashMap<int, int> createSpawn(RefRW<MapComponent> mapComponent)
     {
         int size = mapComponent.ValueRO.size;
         int numWallOfPlayer = mapComponent.ValueRO.numWallOfPlayer;
-        NativeHashMap<int, int> targetSpawn = new NativeHashMap<int, int>(numWallOfPlayer * 2 + 2, Allocator.Temp);
+        var targetSpawn = new NativeHashMap<int, int>(numWallOfPlayer * 2 + 2, Allocator.Temp);
         Random rand = Random.CreateFromIndex((uint)System.DateTime.Now.TimeOfDay.TotalSeconds);
 
         ////add spawn player

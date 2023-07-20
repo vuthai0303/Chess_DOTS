@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -92,7 +93,8 @@ public partial struct AlMoveJob : IJobEntity
             yourPosition = convertInttoVector(player1_cellId);
         }
 
-        NativeArray<int> map = mapComponent.maps.ToNativeArray(Allocator.Temp);
+        var map = new NativeArray<int>(mapComponent.maps.Length, Allocator.Temp);
+        mapComponent.maps.CopyTo(map);
 
         //int nextMove = getRandomNextMove(myPosition, map);
         int nextMove = getMiniMaxMove(myPosition, yourPosition, map);
@@ -134,8 +136,8 @@ public partial struct AlMoveJob : IJobEntity
             var nextMove = moveTemp(myPosition, direction);
             cloneMap[convertVectorToInt(nextMove)] = cloneMap[convertVectorToInt(myPosition)];
             int score = CalculatorMiniMaxMove(yourPosition, nextMove, cloneMap, false, 12);
-            UnityEngine.Debug.Log(nextMove);
-            UnityEngine.Debug.Log(score);
+            //UnityEngine.Debug.Log(nextMove);
+            //UnityEngine.Debug.Log(score);
             cloneMap.Dispose();
             if (score > max)
             {
@@ -159,7 +161,7 @@ public partial struct AlMoveJob : IJobEntity
             }
             else
             {
-                score = getScoreInMap(yourPosition, map, isMaxPlayer, false) + depth;
+                score = getScoreInMap(yourPosition, map, isMaxPlayer, false);
             }
             return score;
         }

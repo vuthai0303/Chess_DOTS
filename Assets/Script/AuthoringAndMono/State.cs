@@ -93,6 +93,9 @@ namespace Assets.script.AuthoringAndMono
         public override void Enter()
         {
             base.Enter();
+            MessageBroadcaster.PrepareMessage()
+                .AliveForOneFrame()
+                .PostImmediate(m_world.EntityManager, new GameStateMessage { state = id });
 
             m_text_turnGame.SetActive(true);
             m_text_ScorePlayer1.SetActive(true);

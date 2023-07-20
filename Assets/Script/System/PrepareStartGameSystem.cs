@@ -23,6 +23,17 @@ public partial struct PrepareStartGameSystem : ISystem
                 new DestroyPlayerJob { ECB = ecb }.Schedule();
                 new DestroyWallJob { ECB = ecb }.Schedule();
                 new resetMapJob { ECB = ecb }.Schedule();
+                foreach (var mapComponent in SystemAPI.Query<RefRW<MapComponent>>())
+                {
+                    if (mapComponent.ValueRW.isCreateMap)
+                    {
+                        mapComponent.ValueRW.isCreateMap = false;
+                        for (int i = 0; i < mapComponent.ValueRO.maps.Length; i++)
+                        {
+                            mapComponent.ValueRW.maps[i] = (int)ColorCell.Empty;
+                        }
+                    }
+                }
             }
         }
 
@@ -66,13 +77,8 @@ public partial struct DestroyWallJob : IJobEntity
 public partial struct resetMapJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
-    void Execute(RefRW<MapComponent> mapComponent, Entity e)
+    void Execute(RefRO<ScoreComponent> ScoreComponent, Entity e)
     {
-        mapComponent.ValueRW.isCreateMap = false;
-        for (int i = 0; i < mapComponent.ValueRO.maps.Length; i++)
-        {
-            mapComponent.ValueRW.maps[i] = (int)ColorCell.Empty;
-        }
         ECB.RemoveComponent<ScoreComponent>(e);
         ECB.RemoveComponent<TurnPlayComponent>(e);
         ECB.RemoveComponent<WinnerComponent>(e);
