@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 public class ChatMessage : MonoBehaviour
 {
-
     [SerializeField] private Text TextField;
 
     public void SetMessage(string playerName, string message, bool isServer)

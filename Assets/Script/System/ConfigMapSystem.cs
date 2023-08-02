@@ -11,6 +11,11 @@ public partial struct ConfigMapSystem : ISystem
 
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
 
+        foreach (var mapComponent in SystemAPI.Query<RefRW<MapComponent>>())
+        {
+            return;
+        }
+
         foreach (var (mapConfig, e) in SystemAPI.Query<RefRW<MapConfig>>().WithEntityAccess())
         {
             var map = new NativeArray<int>(mapConfig.ValueRO.size * mapConfig.ValueRO.size, Allocator.Persistent);

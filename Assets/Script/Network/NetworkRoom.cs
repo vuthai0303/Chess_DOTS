@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -47,7 +45,7 @@ public class NetworkRoom : NetworkBehaviour
         btn_ready2.GetComponentInChildren<Text>().text = UNREADY;
         btn_ready1.GetComponent<Button>().onClick.AddListener(delegate { onClickReadyButton(btn_ready1); });
         btn_ready2.GetComponent<Button>().onClick.AddListener(delegate { onClickReadyButton(btn_ready2); });
-        btn_StartGame.GetComponent<Button>().onClick.AddListener(onClickStartGame);
+        
     }
 
     private void Update()
@@ -154,10 +152,10 @@ public class NetworkRoom : NetworkBehaviour
         }
     }
 
-    public void onClickStartGame()
-    {
-        NetworkManager.SceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
-    }
+    //public void onClickStartGame()
+    //{
+    //    NetworkManager.SceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+    //}
 
     public void onClickReadyButton(GameObject btn)
     {

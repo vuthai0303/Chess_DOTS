@@ -31,45 +31,33 @@ namespace Assets.script.AuthoringAndMono
         protected GameObject m_Button_start;
         protected GameObject m_input_size;
         protected GameObject m_input_numOfWall;
-        protected Canvas m_canvas_menu;
-        protected Canvas m_canvas_GameUI;
+        protected Canvas m_canvas_Menu;
 
         public MenuState(StateGameManager manager, int id, World world
-                        , GameObject input_size, GameObject input_numOfWall
-                        , GameObject buttonStart,Canvas canvas_menu
-                        , Canvas canvas_GameUI) : base(manager, id, world)
+                        //, GameObject input_size, GameObject input_numOfWall
+                        , GameObject buttonStart,Canvas canvas_menu) : base(manager, id, world)
         {
-            m_input_size = input_size;
-            m_input_numOfWall = input_numOfWall;
+            //m_input_size = input_size;
+            //m_input_numOfWall = input_numOfWall;
             m_Button_start = buttonStart;
-            m_canvas_menu = canvas_menu;
-            m_canvas_GameUI = canvas_GameUI;
+            m_canvas_Menu = canvas_menu;
         }
 
         public override void Enter()
         {
             base.Enter();
-            m_canvas_menu.enabled = true;
-            m_canvas_GameUI.enabled = false;
-            m_Button_start.SetActive(true);
-            //m_input_size.SetActive(true);
-            //m_input_size.GetComponent<Text>().text = "";
-            //m_input_numOfWall.SetActive(true);
-            //m_input_numOfWall.GetComponent<Text>().text = "";
-
+            m_canvas_Menu.enabled = true;
         }
 
         public override void Exit()
         {
             base.Exit();
-            m_canvas_menu.enabled=false;
-            m_canvas_GameUI.enabled = true;
+            m_canvas_Menu.enabled=false;
         }
 
         public override void Update()
         {
             base.Update();
-
         }
 
         public override void FixedUpdate()
@@ -84,20 +72,15 @@ namespace Assets.script.AuthoringAndMono
         protected GameObject m_text_turnGame;
         protected GameObject m_text_ScorePlayer1;
         protected GameObject m_text_ScorePlayer2;
-        protected GameObject m_button_restart;
-        protected GameObject m_button_home;
 
         public GameLoop(StateGameManager manager, int id, World world
                         , GameObject textEndGame, GameObject textTurnGame
-                        , GameObject textScrorePlayer1, GameObject textScorePlayer2
-                        , GameObject buttonRestart, GameObject buttonHome) : base(manager, id, world)
+                        , GameObject textScrorePlayer1, GameObject textScorePlayer2) : base(manager, id, world)
         {
             m_text_endGame = textEndGame;
             m_text_turnGame = textTurnGame;
             m_text_ScorePlayer1 = textScrorePlayer1;
             m_text_ScorePlayer2 = textScorePlayer2;
-            m_button_restart = buttonRestart;
-            m_button_home = buttonHome;
         }
 
         public override void Enter()
@@ -107,19 +90,14 @@ namespace Assets.script.AuthoringAndMono
                 .AliveForOneFrame()
                 .PostImmediate(m_world.EntityManager, new GameStateMessage { state = id });
 
+            m_text_turnGame.GetComponent<Text>().text = "";
             m_text_turnGame.SetActive(true);
-            m_text_ScorePlayer1.SetActive(true);
-            m_text_ScorePlayer2.SetActive(true);
-
             m_text_endGame.SetActive(false);
-            m_button_restart.SetActive(false);
-            m_button_home.SetActive(false);
         }
 
         public override void Exit()
         {
             base.Exit();
-            m_text_turnGame.GetComponent<Text>().text = "";
             m_text_turnGame.SetActive(false);
         }
 
@@ -157,7 +135,7 @@ namespace Assets.script.AuthoringAndMono
             }
             else
             {
-                m_text_turnGame.GetComponent<Text>().text = "Error!";
+                m_text_turnGame.GetComponent<Text>().text = "";
             }
         }
 
@@ -167,8 +145,8 @@ namespace Assets.script.AuthoringAndMono
             var isScoreComponent = m_world.EntityManager.CreateEntityQuery(typeof(ScoreComponent)).TryGetSingleton<ScoreComponent>(out score);
             if (isScoreComponent)
             {
-                m_text_ScorePlayer1.GetComponent<Text>().text = score.score_player1 + " : Player 1";
-                m_text_ScorePlayer2.GetComponent<Text>().text = "Player 2 : " + score.score_player2;
+                m_text_ScorePlayer1.GetComponent<Text>().text = score.score_player1.ToString();
+                m_text_ScorePlayer2.GetComponent<Text>().text = score.score_player2.ToString();
             }
         }
 
@@ -181,16 +159,13 @@ namespace Assets.script.AuthoringAndMono
     public class EndGame : State
     {
         protected GameObject m_text_endGame;
-        protected GameObject m_button_restart;
-        protected GameObject m_button_home;
+        protected Canvas m_canvas_Menu;
 
         public EndGame(StateGameManager manager, int id, World world
-                        , GameObject textEndGame, GameObject buttonRestart
-                        , GameObject buttonHome) : base(manager, id, world)
+                        , GameObject textEndGame, Canvas menu) : base(manager, id, world)
         {
             m_text_endGame = textEndGame;
-            m_button_restart = buttonRestart;
-            m_button_home = buttonHome;
+            m_canvas_Menu = menu;
         }
 
         public override void Enter()
@@ -214,8 +189,6 @@ namespace Assets.script.AuthoringAndMono
                 }
             }
             m_text_endGame.SetActive(true);
-            m_button_restart.SetActive(true);
-            m_button_home.SetActive(true);
         }
 
         public override void Exit()
@@ -223,8 +196,6 @@ namespace Assets.script.AuthoringAndMono
             base.Exit();
             m_text_endGame.GetComponent<Text>().text = "";
             m_text_endGame.SetActive(false);
-            m_button_restart.SetActive(false);
-            m_button_home.SetActive(false);
         }
 
         public override void Update()

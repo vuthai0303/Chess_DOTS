@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.17688636, g: 0.22187504, b: 0.30229855, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -135,7 +135,6 @@ GameObject:
   - component: {fileID: 23890036}
   - component: {fileID: 23890035}
   - component: {fileID: 23890034}
-  - component: {fileID: 23890033}
   - component: {fileID: 23890032}
   m_Layer: 5
   m_Name: UIMessage
@@ -164,22 +163,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &23890033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 23890030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bc9a851fd5aabd48937be06d39d848b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chatMessagePrefab: {fileID: 8568832742969218062, guid: d029c8f701034c54ab9325ec9ca898c0,
-    type: 3}
-  messageParent: {fileID: 1563904258}
-  chatInputField: {fileID: 1140970842}
 --- !u!114 &23890034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1124,7 +1107,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1283194758}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69d65f077367511448fa7bbf988832af, type: 3}
+  m_Script: {fileID: 11500000, guid: cabd5e3d13bf5164dadc1b85f3f42a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1499030626

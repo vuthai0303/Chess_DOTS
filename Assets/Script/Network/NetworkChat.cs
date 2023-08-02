@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NetworkLobbyChat : NetworkBehaviour
+public class NetworkChat : NetworkBehaviour
 {
     public ChatMessage chatMessagePrefab;
     public Transform messageParent;

@@ -1,7 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 
-[BurstCompile]
+//[BurstCompile]
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 public partial struct GameStateSystem : ISystem
 {
@@ -17,6 +17,7 @@ public partial struct GameStateSystem : ISystem
         ref SystemState changeGameStateSystem = ref state.WorldUnmanaged.GetExistingSystemState<ChangeGameStateSystem>();
         ref SystemState controlMoveSystem = ref state.WorldUnmanaged.GetExistingSystemState<ControlMoveSystem>();
         ref SystemState createMapSystem = ref state.WorldUnmanaged.GetExistingSystemState<CreateMapSystem>();
+        ref SystemState configMapSystem = ref state.WorldUnmanaged.GetExistingSystemState<ConfigMapSystem>();
         ref SystemState movingSystem = ref state.WorldUnmanaged.GetExistingSystemState<MovingSystem>();
         ref SystemState renderMapSystem = ref state.WorldUnmanaged.GetExistingSystemState<RenderMapSystem>();
         ref SystemState scoreSystem = ref state.WorldUnmanaged.GetExistingSystemState<ScoreSystem>();
@@ -24,9 +25,12 @@ public partial struct GameStateSystem : ISystem
         ref SystemState switchTurnSystem = ref state.WorldUnmanaged.GetExistingSystemState<SwitchTurnSystem>();
         ref SystemState updateMapSystem = ref state.WorldUnmanaged.GetExistingSystemState<UpdateMapSystem>();
 
+        //UnityEngine.Debug.Log(gameStateSingleton.state);
+
         switch (gameStateSingleton.state)
         {
             case (int)GameState.GameLoop:
+                configMapSystem.Enabled = true;
                 createMapSystem.Enabled = true;
                 spawnSystem.Enabled = true;
                 controlMoveSystem.Enabled = true;
