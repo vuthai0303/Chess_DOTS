@@ -6,9 +6,16 @@ public class ChatMessage : MonoBehaviour
 
     [SerializeField] private Text TextField;
 
-    public void SetMessage(string playerName, string message)
+    public void SetMessage(string playerName, string message, bool isServer)
     {
-        //textField.text = $"<color=grey>{playerName}</color>: {message}";
-        TextField.text = $"<color=Blue>Player {playerName}</color>: {message}";
+        if(isServer)
+        {
+            TextField.text = $"<color=yellow>{message}</color>";
+        }
+        else
+        {
+            TextField.text = $"<color=Blue>Player {playerName}</color>: {message}";
+        }
+        
     }
 }

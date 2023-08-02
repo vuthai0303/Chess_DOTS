@@ -1,5 +1,7 @@
 ﻿using Assets.script.AuthoringAndMono;
 using Unity.Entities;
+using Unity.Scenes;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -43,6 +45,10 @@ public class GameController : MonoBehaviour
         stateGameManager.addState((int)GameState.RestartGame, new RestartGame(stateGameManager, (int)GameState.RestartGame, _world));
 
         stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.Menu));
+
+        //print(GameObject.Find("SubScreen").GetComponent<SubScene>().EditingScene. );
+        //GameObject.Find("SubScreen").GetComponent<SubScene>().enabled = true;
+
     }
 
     void Update()

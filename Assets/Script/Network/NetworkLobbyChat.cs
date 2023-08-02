@@ -5,22 +5,21 @@ using UnityEngine.UI;
 
 public class NetworkLobbyChat : NetworkBehaviour
 {
-    [SerializeField]
-    private ChatMessage chatMessagePrefab;
-    [SerializeField]
-    private Transform messageParent;
-    [SerializeField]
-    private InputField chatInputField;
+    public ChatMessage chatMessagePrefab;
+    public Transform messageParent;
+    public InputField chatInputField;
 
     private const int MaxNumberOfMessagesInList = 20;
-    private List<NetworkVariable<ChatMessage>> _messages;
+    //private static List<NetworkVariable<ChatMessage>> _messages;
+    public List<ChatMessage> _messages;
 
     private const float MinIntervalBetweenChatMessages = 1f;
     private float _clientSendTimer;
 
     private void Start()
     {
-        _messages = new List<NetworkVariable<ChatMessage>>();
+        //_messages = new List<NetworkVariable<ChatMessage>>();
+        _messages = new List<ChatMessage>();
         
     }
 
@@ -62,44 +61,49 @@ public class NetworkLobbyChat : NetworkBehaviour
         }
 
         _clientSendTimer = 0;
-        Debug.Log("send message " + NetworkManager.Singleton.LocalClientId.ToString() + " " + message);
+        //Debug.Log("send message " + NetworkManager.Singleton.LocalClientId.ToString() + " " + message);
         SendChatMessageServerRpc(message, NetworkManager.Singleton.LocalClientId);
     }
 
-    private void AddMessage(string message, ulong senderPlayerId)
+    private void AddMessage(string message, ulong senderPlayerId, bool isServer)
     {
         var msg = Instantiate(chatMessagePrefab, messageParent);
-        msg.SetMessage(senderPlayerId.ToString(), message);
+        msg.SetMessage(senderPlayerId.ToString(), message, isServer);
 
         if(_messages.Count > 0)
         {
-            var position = _messages[_messages.Count - 1].Value.GetComponentInParent<Transform>().position;
+            //var position = _messages[_messages.Count - 1].Value.GetComponentInParent<Transform>().position;
+            var position = _messages[_messages.Count - 1].GetComponentInParent<Transform>().position;
             position.y -= 30f;
             msg.GetComponentInParent<Transform>().position = position;
         }
         
-        _messages.Add(new NetworkVariable<ChatMessage>(msg));
+        //_messages.Add(new NetworkVariable<ChatMessage>(msg));
+        _messages.Add(msg);
 
         if (_messages.Count > MaxNumberOfMessagesInList)
         {
-            Destroy(_messages[0].Value);
-            _messages[0].Dispose();
+            //Destroy(_messages[0].Value);
+            //_messages[0].Dispose();
+            Destroy(_messages[0]);
             _messages.RemoveAt(0);
         }
     }
 
     [ClientRpc]
-    private void ReceiveChatMessageClientRpc(string message, ulong senderPlayerId)
+    public void ReceiveChatMessageClientRpc(string message, ulong senderPlayerId, bool isServer)
     {
-        print(message);
-        print(senderPlayerId);
-        AddMessage(message, senderPlayerId);
+        //print(message);
+        //print(senderPlayerId);
+        print(_messages.Count);
+        AddMessage(message, senderPlayerId, isServer);
+        print(_messages.Count);
     }
 
     [ServerRpc (RequireOwnership = false)]
-    private void SendChatMessageServerRpc(string message, ulong senderPlayerId)
+    public void SendChatMessageServerRpc(string message, ulong senderPlayerId)
     {
-        print("send SendChatMessageServerRpc");
-        ReceiveChatMessageClientRpc(message, senderPlayerId);
+        //print("send SendChatMessageServerRpc");
+        ReceiveChatMessageClientRpc(message, senderPlayerId, false);
     }
 }
