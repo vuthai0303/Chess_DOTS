@@ -1,20 +1,28 @@
+using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
-[BurstCompile]
+//[BurstCompile]
 [UpdateAfter(typeof(ConfigMapSystem))]
 public partial struct CreateMapSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)
     {
-        state.Enabled = false;
+        //state.Enabled = false;
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
 
         MapConfig mapConfig;
         var isMapConfig = SystemAPI.TryGetSingleton<MapConfig>(out mapConfig);
         if (!isMapConfig)
+        {
+            return;
+        }
+
+        NetworkSyncMapMessage message;
+        var isMessage = SystemAPI.TryGetSingleton<NetworkSyncMapMessage>(out message);
+        if (!isMessage)
         {
             return;
         }
@@ -47,42 +55,25 @@ public partial struct CreateMapSystem : ISystem
 
                     if (targetSpawn.ContainsKey(cellID))
                     {
-                        var newEntity = ecb.CreateEntity();
                         switch (targetSpawn[cellID])
                         {
                             case (int)TargetSpawn.Player1:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Player1;
-                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
-                                {
-                                    targetSpawn = mapConfig.Player1,
-                                    targetID = (int)TargetSpawn.Player1,
-                                    cellID = cellID,
-                                    position = position,
-                                });
                                 break;
                             case (int)TargetSpawn.Player2:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Player2;
-                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
-                                {
-                                    targetSpawn = mapConfig.Player2,
-                                    targetID = (int)TargetSpawn.Player2,
-                                    cellID = cellID,
-                                    position = position,
-                                });
                                 break;
                             case (int)TargetSpawn.Wall:
                                 mapComponent.ValueRW.maps[cellID] = (int)ColorCell.Wall;
-                                ecb.AddComponent(newEntity, new SpawnerObjectComponent
-                                {
-                                    targetSpawn = mapConfig.Wall,
-                                    targetID = (int)TargetSpawn.Wall,
-                                    cellID = cellID,
-                                    position = position,
-                                });
                                 break;
                         }
                     }
                 }
+            }
+
+            if (message.maps.Length > 0)
+            {
+                mapComponent.ValueRW.maps = message.maps;
             }
 
             ecb.AddComponent(e, new ScoreComponent { score_player1 = 1, score_player2 = 1 });
@@ -95,7 +86,6 @@ public partial struct CreateMapSystem : ISystem
             mapComponent.ValueRW.isCreateMap = true;
         }
 
-        state.Dependency.Complete();
         ecb.Playback(state.EntityManager);
         ecb.Dispose();
     }
@@ -121,7 +111,7 @@ public partial struct CreateMapSystem : ISystem
             int cellID = rand.NextInt(0, (int)math.ceil((size * size) / 2f));
             while (targetSpawn.ContainsKey(cellID))
             {
-                cellID = rand.NextInt(0, size * size);
+                cellID = rand.NextInt(0, (int)math.ceil((size * size) / 2f));
             }
             targetSpawn.Add(cellID, (int)TargetSpawn.Wall);
             targetSpawn.Add((size * size - 1) - cellID, (int)TargetSpawn.Wall);

@@ -1,4 +1,5 @@
 ﻿using CortexDeveloper.ECSMessages.Service;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,12 +11,15 @@ namespace Assets.script.AuthoringAndMono
         public int id;
         protected StateGameManager gameManager;
         protected World m_world;
+        public int[] m_maps;
+        public GameController m_controller;
 
-        public State(StateGameManager gameManager, int id, World world)
+        public State(StateGameManager gameManager, int id, World world, GameController controller)
         {
             this.gameManager = gameManager;
             this.id = id;   
             this.m_world = world;
+            this.m_controller = controller;
         }
 
         public virtual void Enter() {
@@ -24,6 +28,11 @@ namespace Assets.script.AuthoringAndMono
         public virtual void Exit() { }
         public virtual void FixedUpdate() { }
         public virtual void Update() { }
+
+        public virtual void setMaps(int[] maps)
+        {
+            this.m_maps = maps;
+        }
     }
 
     public class MenuState : State
@@ -33,9 +42,9 @@ namespace Assets.script.AuthoringAndMono
         protected GameObject m_input_numOfWall;
         protected Canvas m_canvas_Menu;
 
-        public MenuState(StateGameManager manager, int id, World world
+        public MenuState(StateGameManager manager, int id, World world, GameController controller
                         //, GameObject input_size, GameObject input_numOfWall
-                        , GameObject buttonStart,Canvas canvas_menu) : base(manager, id, world)
+                        , GameObject buttonStart,Canvas canvas_menu) : base(manager, id, world, controller)
         {
             //m_input_size = input_size;
             //m_input_numOfWall = input_numOfWall;
@@ -66,6 +75,64 @@ namespace Assets.script.AuthoringAndMono
         }
     }
 
+    public class LoadingMap : State
+    {
+        public LoadingMap(StateGameManager manager, int id, World world, GameController controller) 
+            : base(manager, id, world, controller)
+        {
+        }
+
+        public override void Enter()
+        {
+            base.Enter();
+            if (m_controller.IsServer)
+            {
+                Debug.Log("Server send message load map");
+                MessageBroadcaster.PrepareMessage()
+                .AliveForOneFrame()
+                .PostImmediate(m_world.EntityManager, new NetworkSyncMapMessage { maps = new NativeArray<int>() });
+            }
+            if (m_controller.IsClient && !m_controller.IsServer && m_maps != null)
+            {
+                Debug.Log("Client send message load map");
+                var nav_map = new NativeArray<int>(m_maps.Length, Allocator.Persistent);
+                nav_map.CopyFrom(m_maps);
+                MessageBroadcaster.PrepareMessage()
+                .AliveForOneFrame()
+                .PostImmediate(m_world.EntityManager, new NetworkSyncMapMessage { maps = nav_map });
+            }
+            
+        }
+
+        public override void Exit()
+        {
+            base.Exit();
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            MapComponent mapComponent;
+            var isMapComponent = m_world.EntityManager.CreateEntityQuery(typeof(MapComponent))
+                .TryGetSingleton<MapComponent>(out mapComponent);
+            if (isMapComponent)
+            {
+                gameManager.setCurrentState(gameManager.getState((int)GameState.GameLoop));
+
+                if (m_controller.IsServer)
+                {
+                    Debug.Log("Server send map to client");
+                    m_controller.onClickStartGameClientRPC(0, mapComponent.maps.ToArray());
+                }
+            }
+        }
+
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+        }
+    }
+
     public class GameLoop : State
     {
         protected GameObject m_text_endGame;
@@ -73,9 +140,10 @@ namespace Assets.script.AuthoringAndMono
         protected GameObject m_text_ScorePlayer1;
         protected GameObject m_text_ScorePlayer2;
 
-        public GameLoop(StateGameManager manager, int id, World world
+        public GameLoop(StateGameManager manager, int id, World world, GameController controller
                         , GameObject textEndGame, GameObject textTurnGame
-                        , GameObject textScrorePlayer1, GameObject textScorePlayer2) : base(manager, id, world)
+                        , GameObject textScrorePlayer1, GameObject textScorePlayer2) 
+            : base(manager, id, world, controller)
         {
             m_text_endGame = textEndGame;
             m_text_turnGame = textTurnGame;
@@ -89,6 +157,10 @@ namespace Assets.script.AuthoringAndMono
             MessageBroadcaster.PrepareMessage()
                 .AliveForOneFrame()
                 .PostImmediate(m_world.EntityManager, new GameStateMessage { state = id });
+
+            //MessageBroadcaster.PrepareMessage()
+            //    .AliveForOneFrame()
+            //    .PostImmediate(m_world.EntityManager, new NetworkSyncMapMessage { maps = new NativeArray<int>() });
 
             m_text_turnGame.GetComponent<Text>().text = "";
             m_text_turnGame.SetActive(true);
@@ -150,6 +222,8 @@ namespace Assets.script.AuthoringAndMono
             }
         }
 
+        
+
         public override void FixedUpdate()
         {
             base.FixedUpdate();
@@ -161,8 +235,8 @@ namespace Assets.script.AuthoringAndMono
         protected GameObject m_text_endGame;
         protected Canvas m_canvas_Menu;
 
-        public EndGame(StateGameManager manager, int id, World world
-                        , GameObject textEndGame, Canvas menu) : base(manager, id, world)
+        public EndGame(StateGameManager manager, int id, World world, GameController controller
+                        , GameObject textEndGame, Canvas menu) : base(manager, id, world, controller)
         {
             m_text_endGame = textEndGame;
             m_canvas_Menu = menu;
@@ -171,6 +245,7 @@ namespace Assets.script.AuthoringAndMono
         public override void Enter()
         {
             base.Enter();
+            m_text_endGame.active = true;
             WinnerComponent winnerComponent;
             var isWinnerComponent = m_world.EntityManager.CreateEntityQuery(typeof(WinnerComponent)).TryGetSingleton<WinnerComponent>(out winnerComponent);
             if (isWinnerComponent)
@@ -212,7 +287,7 @@ namespace Assets.script.AuthoringAndMono
     public class RestartGame : State
     {
 
-        public RestartGame(StateGameManager manager, int id, World world) : base(manager, id, world)
+        public RestartGame(StateGameManager manager, int id, World world, GameController controller) : base(manager, id, world, controller)
         {
         }
 

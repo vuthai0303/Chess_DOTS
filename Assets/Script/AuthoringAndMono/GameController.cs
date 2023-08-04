@@ -1,9 +1,11 @@
 ﻿using Assets.script.AuthoringAndMono;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameController : MonoBehaviour
+public class GameController : NetworkBehaviour
 {
     public GameObject m_text_room;
     public GameObject m_btn_ready_1;
@@ -17,6 +19,7 @@ public class GameController : MonoBehaviour
     public GameObject m_text_ScorePlayer2;
     public GameObject m_button_home;
     public Canvas m_canvas_UIMenu;
+    public int[] arr;
 
     private StateGameManager stateGameManager;
     private World _world;
@@ -29,20 +32,22 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        stateGameManager.addState((int)GameState.Menu, new MenuState(stateGameManager, (int)GameState.Menu, _world
+        stateGameManager.addState((int)GameState.LoadingMap, new LoadingMap(stateGameManager, (int)GameState.LoadingMap, _world, this));
+
+        stateGameManager.addState((int)GameState.Menu, new MenuState(stateGameManager, (int)GameState.Menu, _world, this
                                                                         //, m_input_size, m_input_numOfWall
                                                                         , m_button_start, m_canvas_UIMenu));
 
-        stateGameManager.addState((int)GameState.GameLoop, new GameLoop(stateGameManager, (int)GameState.GameLoop, _world
+        stateGameManager.addState((int)GameState.GameLoop, new GameLoop(stateGameManager, (int)GameState.GameLoop, _world, this
                                                                         , m_text_endGame, m_text_turnGame
                                                                         , m_text_ScorePlayer1, m_text_ScorePlayer2));
 
-        stateGameManager.addState((int)GameState.EndGame, new EndGame(stateGameManager, (int)GameState.EndGame, _world
+        stateGameManager.addState((int)GameState.EndGame, new EndGame(stateGameManager, (int)GameState.EndGame, _world, this
                                                                         , m_text_endGame, m_canvas_UIMenu));
 
-        stateGameManager.addState((int)GameState.RestartGame, new RestartGame(stateGameManager, (int)GameState.RestartGame, _world));
+        stateGameManager.addState((int)GameState.RestartGame, new RestartGame(stateGameManager, (int)GameState.RestartGame, _world, this));
 
-        stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.Menu));
+        stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.LoadingMap));
 
         //print(GameObject.Find("SubScreen").GetComponent<SubScene>().EditingScene. );
         //GameObject.Find("SubScreen").GetComponent<SubScene>().enabled = true;
@@ -57,16 +62,31 @@ public class GameController : MonoBehaviour
 
     public void OnClickStartGame()
     {
-        stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.GameLoop));
+        //if (IsServer)
+        //{
+        //    onClickStartGameServerRPC(0, NetworkManager.LocalClientId, new NativeArray<int>());
+        //}
+        onClickStartGameServerRPC(0);
     }
 
-    //public void onClickRestartGame()
-    //{
-    //    stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.RestartGame));
-    //}
+    [ClientRpc]
+    public void onClickStartGameClientRPC(int roomID, int[] maps) 
+    {
+        arr = maps;
+        if (IsServer)
+        {
+            return;
+        }
+        print("client " + NetworkManager.LocalClientId + " is loading map");
+        stateGameManager.getState((int)GameState.LoadingMap).setMaps(maps);
+        stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.LoadingMap));
+    }
 
-    //public void onClickHome()
-    //{
-    //    stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.Menu));
-    //}
+    [ServerRpc]
+    public void onClickStartGameServerRPC(int roomID)
+    {
+        print("Server is loadding map");
+        stateGameManager.setCurrentState(stateGameManager.getState((int)GameState.LoadingMap));
+    }
+
 }

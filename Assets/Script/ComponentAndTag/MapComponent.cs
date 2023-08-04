@@ -17,4 +17,5 @@ public partial struct MapComponent : IComponentData
     public NativeArray<int> maps;
     public int numWallOfPlayer;
     public bool isCreateMap;
+    public bool isCreateObject;
 }

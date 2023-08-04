@@ -30,8 +30,16 @@ public partial struct GameStateSystem : ISystem
         switch (gameStateSingleton.state)
         {
             case (int)GameState.GameLoop:
-                configMapSystem.Enabled = true;
-                createMapSystem.Enabled = true;
+                spawnSystem.Enabled = true;
+                controlMoveSystem.Enabled = true;
+                movingSystem.Enabled = true;
+                switchTurnSystem.Enabled = true;
+                updateMapSystem.Enabled = true;
+                renderMapSystem.Enabled = true;
+                changeGameStateSystem.Enabled = true;
+                scoreSystem.Enabled = true;
+                break;
+            case (int)GameState.GameLoopNetwork:
                 spawnSystem.Enabled = true;
                 controlMoveSystem.Enabled = true;
                 movingSystem.Enabled = true;
@@ -42,7 +50,6 @@ public partial struct GameStateSystem : ISystem
                 scoreSystem.Enabled = true;
                 break;
             case (int)GameState.EndGame:
-                createMapSystem.Enabled = false;
                 spawnSystem.Enabled = false;
                 controlMoveSystem.Enabled = false;
                 movingSystem.Enabled = false;
@@ -53,7 +60,6 @@ public partial struct GameStateSystem : ISystem
                 scoreSystem.Enabled = false;
                 break;
             case (int)GameState.RestartGame:
-                createMapSystem.Enabled = false;
                 spawnSystem.Enabled = false;
                 controlMoveSystem.Enabled = false;
                 movingSystem.Enabled = false;
@@ -64,7 +70,6 @@ public partial struct GameStateSystem : ISystem
                 scoreSystem.Enabled = false;
                 break;
             default:
-                createMapSystem.Enabled = false;
                 spawnSystem.Enabled = false;
                 controlMoveSystem.Enabled = false;
                 movingSystem.Enabled = false;

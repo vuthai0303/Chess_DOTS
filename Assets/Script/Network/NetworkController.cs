@@ -19,17 +19,16 @@ public class NetworkController : MonoBehaviour
             if (GUILayout.Button("Host"))
             {
                 networkManager.StartHost();
-                networkManager.SceneManager.LoadScene("MenuGame", LoadSceneMode.Single);
+                //networkManager.SceneManager.LoadScene("MenuGame", LoadSceneMode.Single);
             }
             if (GUILayout.Button("Client"))
             {
                 networkManager.StartClient();
-                //networkManager.SceneManager.LoadScene("MenuGame", LoadSceneMode.Single);
             }
             if (GUILayout.Button("Server"))
             {
                 networkManager.StartServer();
-                networkManager.SceneManager.LoadScene("MenuGame", LoadSceneMode.Single);
+                //networkManager.SceneManager.LoadScene("MenuGame", LoadSceneMode.Single);
             }
         }
         else

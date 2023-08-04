@@ -39,7 +39,7 @@ public partial struct SpawnSystem : ISystem
 
         new SpawnCellJob { ECB = ecb, mapComponent = mapComponent, mapConfig = mapConfig}.Schedule();
         
-        new SpawnJob { ECB = ecb, TurnPlayComponent = turnPlayComponent }.Schedule();
+        new SpawnJob { ECB = ecb }.Schedule();
 
         state.Dependency.Complete();
         ecb.Playback(state.EntityManager);
@@ -51,7 +51,6 @@ public partial struct SpawnSystem : ISystem
 public partial struct SpawnJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
-    public TurnPlayComponent TurnPlayComponent;
 
     void Execute(RefRO<SpawnerObjectComponent> spawner, Entity entity)
     {

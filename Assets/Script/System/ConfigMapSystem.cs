@@ -7,7 +7,7 @@ public partial struct ConfigMapSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)
     {
-        state.Enabled = false;
+        //state.Enabled = false;
 
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
 
@@ -30,6 +30,7 @@ public partial struct ConfigMapSystem : ISystem
                 maps = map,
                 numWallOfPlayer = mapConfig.ValueRO.numWallOfPlayer,
                 isCreateMap = false,
+                isCreateObject = false,
             });
         }
 

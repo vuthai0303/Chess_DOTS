@@ -1,9 +1,9 @@
 public enum ColorCell
 {
     Empty = 0,
-    Wall = 1,
-    Player1 = 2,
-    Player2 = 3,
+    Player1 = 1,
+    Player2 = 2,
+    Wall = 3,
 }
 
 public enum Direction
@@ -33,6 +33,8 @@ public enum GameState
     GameLoop = 1,
     EndGame = 2,
     RestartGame = 3,
+    GameLoopNetwork = 4,
+    LoadingMap = 5,
 }
 
 public enum StateEndGame

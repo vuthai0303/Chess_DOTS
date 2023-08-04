@@ -26,6 +26,7 @@ public class ECSMessageConfig : MonoBehaviour
     private void CreateExampleSystems()
     {
         _simulationSystemGroup.AddSystemToUpdateList(_world.CreateSystem<GetMessageSystem>());
+        //_simulationSystemGroup.AddSystemToUpdateList(_world.CreateSystem<CreateSpawnObjectSystem>());
     }
 
     private void OnDestroy()
@@ -42,6 +43,7 @@ public class ECSMessageConfig : MonoBehaviour
     private void RemoveExampleSystem()
     {
         _simulationSystemGroup.RemoveSystemFromUpdateList(_world.CreateSystem<GetMessageSystem>());
+        //_simulationSystemGroup.RemoveSystemFromUpdateList(_world.CreateSystem<CreateSpawnObjectSystem>());
     }
 
     private void DisposeMessageBroadcaster()
