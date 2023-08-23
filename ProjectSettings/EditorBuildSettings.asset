@@ -8,13 +8,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Samples/Netcode for GameObjects/1.5.1/Bootstrap/Scenes/Bootstrap.unity
     guid: 7a6e122bd2b01425989087a299b6bb93
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ExampleNetwork.unity
     guid: eb601f0fabc6c9f489f1333d822047b7
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MenuGame.unity
     guid: 494b28f8f39973e419cdfb944ca8588a
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects: {}
