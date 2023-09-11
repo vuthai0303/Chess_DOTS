@@ -1,4 +1,4 @@
 # TankWar
 
 - Video demo
-<img src="https://res.cloudinary.com/dru3umoml/image/upload/v1694409172/image/ChessGame_qzakbm.gif" width="600" alt="demo" />
+<img src="https://github.com/vuthai0303/Chess_DOTS/blob/main/ChessGame.gif" width="600" alt="demo" />
